@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  ground-station:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GIT_COMMIT: latest
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-development}
+        GS_ENVIRONMENT: ${GS_ENVIRONMENT:-development}
+    container_name: ground-station
+    ports:
+      - "7000:7000"
+    volumes:
+      # Persistent data volume for database, recordings, and UHD images
+      - ground-station-data:/app/backend/data
+    environment:
+      # Set your environment variables here
+      - PYTHONUNBUFFERED=1
+      - GR_BUFFER_TYPE=vmcirc_mmap_tmpfile
+    # Uncomment below if you need to access USB devices (for SDR hardware)
+    # devices:
+    #   - /dev/bus/usb:/dev/bus/usb
+    # For hardware access on Windows, you may need to use:
+    # privileged: true
+    restart: unless-stopped
+
+volumes:
+  ground-station-data:
+    driver: local
